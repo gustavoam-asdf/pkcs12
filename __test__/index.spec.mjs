@@ -1,7 +1,96 @@
 import test from 'ava'
 
-import { sum } from '../index.js'
+import { createPkcs12 } from '../index.js'
+import fs from "node:fs/promises";
 
-test('sum from native', (t) => {
-  t.is(sum(1, 2), 3)
+test('build a pfx', async (t) => {
+  const rootDir = import.meta.dirname;
+
+  const rootCA = await fs.readFile(`${rootDir}/resources/root-ca.pem`, "utf8");
+  const subCA = await fs.readFile(`${rootDir}/resources/sub-ca.pem`, "utf8");
+  const certificatePem = await fs.readFile(`${rootDir}/resources/certificate.pem`, "utf8");
+  const privateKeyPem = await fs.readFile(`${rootDir}/resources/private-key.pem`, "utf8");
+
+  t.notThrows(() => {
+    createPkcs12({
+      certificatePem,
+      privateKeyPem,
+      password: "password",
+      fullChainPem: [
+        certificatePem,
+        subCA,
+        rootCA,
+      ],
+    })
+  })
+})
+
+test('throw invalid arg exception', async (t) => {
+  const randomString = (length) => {
+    const randomBytes = crypto.getRandomValues(new Uint8Array(length));
+    const base64String = btoa(String.fromCharCode(...randomBytes));
+
+    return base64String;
+  }
+
+  const rootDir = import.meta.dirname;
+
+  const rootCA = await fs.readFile(`${rootDir}/resources/root-ca.pem`, "utf8");
+  const subCA = await fs.readFile(`${rootDir}/resources/sub-ca.pem`, "utf8");
+  const certificatePem = await fs.readFile(`${rootDir}/resources/certificate.pem`, "utf8");
+  const privateKeyPem = await fs.readFile(`${rootDir}/resources/private-key.pem`, "utf8");
+
+  t.throws(
+    () => createPkcs12({
+      certificatePem: randomString(100),
+      privateKeyPem,
+      password: "password",
+      fullChainPem: [
+        certificatePem,
+        subCA,
+        rootCA,
+      ],
+    }),
+    {
+      instanceOf: Error,
+      code: 'InvalidArg',
+      message: 'Failed to parse certificate'
+    }
+  )
+
+  t.throws(
+    () => createPkcs12({
+      certificatePem,
+      privateKeyPem: randomString(100),
+      password: "password",
+      fullChainPem: [
+        certificatePem,
+        subCA,
+        rootCA,
+      ],
+    }),
+    {
+      instanceOf: Error,
+      code: 'InvalidArg',
+      message: 'Failed to parse private key'
+    }
+  )
+
+  t.throws(
+    () => createPkcs12({
+      certificatePem,
+      privateKeyPem,
+      password: "password",
+      fullChainPem: [
+        randomString(100),
+        subCA,
+        rootCA,
+      ],
+    }),
+    {
+      instanceOf: Error,
+      code: 'InvalidArg',
+      message: 'Failed to parse full_chain_pem[0]'
+    }
+  )
 })
