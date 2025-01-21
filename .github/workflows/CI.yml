@@ -84,6 +84,14 @@ jobs:
         run: ${{ matrix.settings.setup }}
         if: ${{ matrix.settings.setup }}
         shell: bash
+      - name: Install Perl on Windows
+        if: runner.os == 'Windows'
+        run: |
+          if (!(Get-Command perl -ErrorAction SilentlyContinue)) {
+            choco install strawberryperl -y
+            cpan install Locale::Maketext::Simple
+          }
+        shell: powershell
       - name: Setup node x86
         if: matrix.settings.target == 'i686-pc-windows-msvc'
         run: yarn config set supportedArchitectures.cpu "ia32"
