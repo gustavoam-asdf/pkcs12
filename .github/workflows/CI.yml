@@ -84,23 +84,17 @@ jobs:
         run: ${{ matrix.settings.setup }}
         if: ${{ matrix.settings.setup }}
         shell: bash
-      - name: Install OpenSSL - Windows
-        if: matrix.settings.host == 'windows-latest'
+      - name: Install OpenSSL
         run: |
-          choco install openssl -y
-          $env:OPENSSL_DIR = 'C:\Program Files\FireDaemon OpenSSL 3'
-        shell: powershell
-      - name: Install OpenSSL - macOS
-        if: matrix.settings.host == 'macos-latest'
-        run: |
-          brew install openssl
-          export OPENSSL_DIR=$(brew --prefix openssl)
-        shell: bash
-      - name: Install OpenSSL - Linux
-        if: matrix.settings.host == 'ubuntu-latest'
-        run: |
-          sudo apt-get install -y openssl
-          export OPENSSL_DIR=$(which openssl)
+          if [[ "${{ matrix.settings.host }}" == "ubuntu-latest" ]]; then
+            sudo apt-get install pkg-config libssl-dev -y
+            echo "OPENSSL_DIR=/usr/lib/ssl" >> $GITHUB_ENV
+          elif [[ "${{ matrix.settings.host }}" == "macos-latest" ]]; then
+            echo "OPENSSL_DIR=$(brew --prefix openssl)" >> $GITHUB_ENV
+          elif [[ "${{ matrix.settings.host }}" == "windows-latest" ]]; then
+            choco install openssl -y
+            echo "OPENSSL_DIR=C:\Program Files\OpenSSL-Win64" >> $GITHUB_ENV
+          fi
         shell: bash
       - name: Setup node x86
         if: matrix.settings.target == 'i686-pc-windows-msvc'
