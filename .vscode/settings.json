@@ -1,8 +1,19 @@
 {
 	"cSpell.words": [
+		"addnab",
+		"armv",
+		"dtolnay",
+		"elif",
+		"gnueabihf",
+		"gustavoatenciom",
+		"libc",
 		"msvc",
+		"multiarch",
+		"musleabihf",
 		"napi",
+		"npmjs",
 		"pkcs",
-		"pkey"
+		"pkey",
+		"vcpkg"
 	]
 }

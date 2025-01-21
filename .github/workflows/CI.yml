@@ -31,11 +31,13 @@ jobs:
           - host: windows-latest
             build: yarn build --target x86_64-pc-windows-msvc
             target: x86_64-pc-windows-msvc
+            openssl_arch: x64-windows
           - host: windows-latest
             build: |
               yarn build --target i686-pc-windows-msvc
               yarn test
             target: i686-pc-windows-msvc
+            openssl_arch: x86-windows
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             docker: gustavoatenciom/nodejs-rust-openssl:lts-debian
@@ -50,6 +52,7 @@ jobs:
           - host: windows-latest
             target: aarch64-pc-windows-msvc
             build: yarn build --target aarch64-pc-windows-msvc
+            openssl_arch: arm64-windows
     name: stable - ${{ matrix.settings.target }} - node@20
     runs-on: ${{ matrix.settings.host }}
     steps:
@@ -89,8 +92,10 @@ jobs:
           if [[ "${{ matrix.settings.host }}" == "macos-latest" ]]; then
             echo "OPENSSL_DIR=$(brew --prefix openssl)" >> $GITHUB_ENV
           elif [[ "${{ matrix.settings.host }}" == "windows-latest" ]]; then
-            choco install openssl -y
-            echo "OPENSSL_DIR=C:\Program Files\OpenSSL-Win64" >> $GITHUB_ENV
+            git clone https://github.com/microsoft/vcpkg.git
+            ./vcpkg/bootstrap-vcpkg.bat
+            ./vcpkg/vcpkg.exe install openssl:${{ matrix.settings.openssl_arch }}
+            echo "OPENSSL_DIR=$(pwd)/vcpkg/installed/${{ matrix.settings.openssl_arch }}" >> $GITHUB_ENV
           fi
         shell: bash
       - name: Setup node x86
