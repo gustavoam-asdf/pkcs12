@@ -29,9 +29,8 @@ pub fn create_pkcs12(args: CreatePkcs12Args) -> String {
   let certificate =
     X509::from_pem(args.certificate_pem.as_bytes()).expect("Failed to parse certificate");
 
-  let private_key_bytes = base64::decode_block(&args.private_key_pem).unwrap();
-  let private_key =
-    PKey::private_key_from_pem(private_key_bytes.as_slice()).expect("Failed to parse private key");
+  let private_key = PKey::private_key_from_pem(args.private_key_pem.as_bytes())
+    .expect("Failed to parse private key");
 
   let mut pfx_builder = Pkcs12::builder();
 

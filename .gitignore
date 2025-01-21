@@ -196,5 +196,6 @@ Cargo.lock
 
 *.node
 
+*.pfx
 index.d.ts
 index.js
