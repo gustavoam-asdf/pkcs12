@@ -1,5 +1,6 @@
 #![deny(clippy::all)]
 
+use napi::Error;
 use openssl::{base64, pkcs12::Pkcs12, pkey::PKey, stack::Stack, x509::X509};
 
 #[macro_use]
@@ -14,37 +15,76 @@ pub struct CreatePkcs12Args {
 }
 
 #[napi]
-pub fn create_pkcs12(args: CreatePkcs12Args) -> String {
-  let certificates = args.full_chain_pem.iter().map(|pem_cert| {
-    let cert_der = X509::from_pem(pem_cert.as_bytes()).expect("Failed to parse certificate");
-    cert_der
-  });
+pub fn create_pkcs12(args: CreatePkcs12Args) -> Result<String, Error> {
+  let certificate_parsed = X509::from_pem(args.certificate_pem.as_bytes());
 
-  let mut full_chain: Stack<X509> = Stack::new().expect("Failed to create stack");
-
-  for cert in certificates {
-    full_chain.push(cert).expect("Failed to push certificate");
+  if let Err(_) = certificate_parsed {
+    return Err(Error::new(
+      napi::Status::InvalidArg,
+      "Failed to parse certificate",
+    ));
   }
 
-  let certificate =
-    X509::from_pem(args.certificate_pem.as_bytes()).expect("Failed to parse certificate");
+  let private_key_parsed = PKey::private_key_from_pem(args.private_key_pem.as_bytes());
 
-  let private_key = PKey::private_key_from_pem(args.private_key_pem.as_bytes())
-    .expect("Failed to parse private key");
+  if let Err(_) = private_key_parsed {
+    return Err(Error::new(
+      napi::Status::InvalidArg,
+      "Failed to parse private key",
+    ));
+  }
+
+  let created_full_chain = Stack::<X509>::new();
+
+  if let Err(_) = created_full_chain {
+    return Err(Error::new(
+      napi::Status::GenericFailure,
+      "Failed to create full chain",
+    ));
+  }
+
+  let mut full_chain = created_full_chain.unwrap();
+
+  for (i, pem_cert) in args.full_chain_pem.iter().enumerate() {
+    let certificate_parsed = X509::from_pem(pem_cert.as_bytes());
+
+    if let Err(_) = certificate_parsed {
+      return Err(Error::new(
+        napi::Status::InvalidArg,
+        format!("Failed to parse full_chain_pem[{}]", i),
+      ));
+    }
+
+    let certificate_added = full_chain.push(certificate_parsed.unwrap());
+
+    if let Err(_) = certificate_added {
+      return Err(Error::new(
+        napi::Status::GenericFailure,
+        format!("Failed to add full_chain_pem[{}] to full chain", i),
+      ));
+    }
+  }
 
   let mut pfx_builder = Pkcs12::builder();
 
-  pfx_builder.cert(&certificate);
-  pfx_builder.pkey(&private_key);
+  pfx_builder.cert(&certificate_parsed.unwrap());
+  pfx_builder.pkey(&private_key_parsed.unwrap());
   pfx_builder.ca(full_chain);
 
-  let builded_pfx = pfx_builder
-    .build2(&args.password)
-    .expect("Failed to build pfx");
+  let builded_pfx_result = pfx_builder.build2(&args.password);
+
+  if let Err(_) = builded_pfx_result {
+    return Err(Error::new(
+      napi::Status::GenericFailure,
+      "Failed to build pfx",
+    ));
+  }
+
+  let builded_pfx = builded_pfx_result.unwrap();
 
   let pfx_bytes = builded_pfx.to_der().expect("Failed to convert pfx to der");
 
   let pfx_base64 = base64::encode_block(&pfx_bytes);
 
-  pfx_base64
+  Ok(pfx_base64)
 }
