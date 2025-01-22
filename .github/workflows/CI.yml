@@ -37,7 +37,7 @@ jobs:
               yarn build --target i686-pc-windows-msvc
               yarn test
             target: i686-pc-windows-msvc
-            openssl_arch: x86-windows
+            openssl_arch: x64-windows
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             docker: gustavoatenciom/nodejs-rust-openssl:lts-debian
