@@ -31,7 +31,7 @@ jobs:
           - host: windows-latest
             build: yarn build --target x86_64-pc-windows-msvc
             target: x86_64-pc-windows-msvc
-            openssl_arch: x64-windows
+            vcpkg-triplet: x64-windows
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             docker: gustavoatenciom/nodejs-rust-openssl:lts-debian
@@ -42,7 +42,7 @@ jobs:
           - host: windows-latest
             target: aarch64-pc-windows-msvc
             build: yarn build --target aarch64-pc-windows-msvc
-            openssl_arch: arm64-windows
+            vcpkg-triplet: arm64-windows
     name: stable - ${{ matrix.settings.target }} - node@20
     runs-on: ${{ matrix.settings.host }}
     steps:
@@ -77,16 +77,23 @@ jobs:
         run: ${{ matrix.settings.setup }}
         if: ${{ matrix.settings.setup }}
         shell: bash
-      - name: Install OpenSSL
+      - name: Install OpenSSL - MacOS
+        if: ${{ matrix.settings.host == 'macos-latest' }}
+        run: echo "OPENSSL_DIR=$(brew --prefix openssl)" >> $GITHUB_ENV
+        shell: bash
+      - name: Install OpenSSL - Windows
+        uses: johnwason/vcpkg-action@v6
+        if: ${{ matrix.settings.host == 'windows-latest' }}
+        with:
+          pkgs: openssl
+          token: ${{ github.token }}
+          triplet: ${{ matrix.settings.vcpkg-triplet }}
+          cache-key: ${{ matrix.settings.target }}
+          github-binarycache: true
+      - name: Config OpenSSL - Windows
+        if: ${{ matrix.settings.host == 'windows-latest' }}
         run: |
-          if [[ "${{ matrix.settings.host }}" == "macos-latest" ]]; then
-            echo "OPENSSL_DIR=$(brew --prefix openssl)" >> $GITHUB_ENV
-          elif [[ "${{ matrix.settings.host }}" == "windows-latest" ]]; then
-            git clone https://github.com/microsoft/vcpkg.git
-            ./vcpkg/bootstrap-vcpkg.bat
-            ./vcpkg/vcpkg.exe install openssl:${{ matrix.settings.openssl_arch }}
-            echo "OPENSSL_DIR=$(pwd)/vcpkg/installed/${{ matrix.settings.openssl_arch }}" >> $GITHUB_ENV
-          fi
+          echo "OPENSSL_DIR=${{ github.workspace }}/vcpkg/installed/${{ matrix.settings.vcpkg-triplet }}" >> $GITHUB_ENV
         shell: bash
       - name: Install dependencies
         run: yarn install
