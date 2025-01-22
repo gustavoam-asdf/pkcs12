@@ -1,15 +1,12 @@
-import test from 'ava'
-
 import { createPkcs12 } from '../index.js'
 import fs from "node:fs/promises";
+import test from 'ava'
 
 test('build a pfx', async (t) => {
-  const rootDir = import.meta.dirname;
-
-  const rootCA = await fs.readFile(`${rootDir}/resources/root-ca.pem`, "utf8");
-  const subCA = await fs.readFile(`${rootDir}/resources/sub-ca.pem`, "utf8");
-  const certificatePem = await fs.readFile(`${rootDir}/resources/certificate.pem`, "utf8");
-  const privateKeyPem = await fs.readFile(`${rootDir}/resources/private-key.pem`, "utf8");
+  const rootCA = await fs.readFile(`./__test__/resources/root-ca.pem`, "utf8");
+  const subCA = await fs.readFile(`./__test__/resources/sub-ca.pem`, "utf8");
+  const certificatePem = await fs.readFile(`./__test__/resources/certificate.pem`, "utf8");
+  const privateKeyPem = await fs.readFile(`./__test__/resources/private-key.pem`, "utf8");
 
   t.notThrows(() => {
     createPkcs12({
@@ -33,12 +30,10 @@ test('throw invalid arg exception', async (t) => {
     return base64String;
   }
 
-  const rootDir = import.meta.dirname;
-
-  const rootCA = await fs.readFile(`${rootDir}/resources/root-ca.pem`, "utf8");
-  const subCA = await fs.readFile(`${rootDir}/resources/sub-ca.pem`, "utf8");
-  const certificatePem = await fs.readFile(`${rootDir}/resources/certificate.pem`, "utf8");
-  const privateKeyPem = await fs.readFile(`${rootDir}/resources/private-key.pem`, "utf8");
+  const rootCA = await fs.readFile(`./__test__/resources/root-ca.pem`, "utf8");
+  const subCA = await fs.readFile(`./__test__/resources/sub-ca.pem`, "utf8");
+  const certificatePem = await fs.readFile(`./__test__/resources/certificate.pem`, "utf8");
+  const privateKeyPem = await fs.readFile(`./__test__/resources/private-key.pem`, "utf8");
 
   t.throws(
     () => createPkcs12({
