@@ -32,12 +32,6 @@ jobs:
             build: yarn build --target x86_64-pc-windows-msvc
             target: x86_64-pc-windows-msvc
             openssl_arch: x64-windows
-          - host: windows-latest
-            build: |
-              yarn build --target i686-pc-windows-msvc
-              yarn test
-            target: i686-pc-windows-msvc
-            openssl_arch: x64-windows
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             docker: gustavoatenciom/nodejs-rust-openssl:lts-debian
@@ -94,19 +88,8 @@ jobs:
             echo "OPENSSL_DIR=$(pwd)/vcpkg/installed/${{ matrix.settings.openssl_arch }}" >> $GITHUB_ENV
           fi
         shell: bash
-      - name: Setup node x86
-        if: matrix.settings.target == 'i686-pc-windows-msvc'
-        run: yarn config set supportedArchitectures.cpu "ia32"
-        shell: bash
       - name: Install dependencies
         run: yarn install
-      - name: Setup node x86
-        uses: actions/setup-node@v4
-        if: matrix.settings.target == 'i686-pc-windows-msvc'
-        with:
-          node-version: 20
-          cache: yarn
-          architecture: x86
       - name: Build in docker
         uses: addnab/docker-run-action@v3
         if: ${{ matrix.settings.docker }}
