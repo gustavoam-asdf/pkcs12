@@ -1,4 +1,5 @@
 import { createPkcs12 } from '../index.js'
+import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import test from 'ava'
 
