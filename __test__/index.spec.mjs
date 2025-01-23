@@ -14,7 +14,7 @@ test('build a pfx', async (t) => {
       certificatePem,
       privateKeyPem,
       password: "0123456789",
-      fullChainPem: [
+      caChainPem: [
         subCA,
         rootCA,
       ],
@@ -40,7 +40,7 @@ test('throw invalid arg exception', async (t) => {
       certificatePem: randomString(100),
       privateKeyPem,
       password: "0123456789",
-      fullChainPem: [
+      caChainPem: [
         subCA,
         rootCA,
       ],
@@ -57,7 +57,7 @@ test('throw invalid arg exception', async (t) => {
       certificatePem,
       privateKeyPem: randomString(100),
       password: "0123456789",
-      fullChainPem: [
+      caChainPem: [
         subCA,
         rootCA,
       ],
@@ -74,7 +74,7 @@ test('throw invalid arg exception', async (t) => {
       certificatePem,
       privateKeyPem,
       password: "0123456789",
-      fullChainPem: [
+      caChainPem: [
         randomString(100),
         rootCA,
       ],
@@ -82,7 +82,7 @@ test('throw invalid arg exception', async (t) => {
     {
       instanceOf: Error,
       code: 'InvalidArg',
-      message: 'Failed to parse full_chain_pem[0]'
+      message: 'Failed to parse caChainPem[0]'
     }
   )
 })

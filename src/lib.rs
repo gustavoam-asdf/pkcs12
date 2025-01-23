@@ -11,7 +11,7 @@ pub struct CreatePkcs12Args {
   pub password: String,
   pub private_key_pem: String,
   pub certificate_pem: String,
-  pub full_chain_pem: Vec<String>,
+  pub ca_chain_pem: Vec<String>,
 }
 
 #[napi]
@@ -34,33 +34,33 @@ pub fn create_pkcs12(args: CreatePkcs12Args) -> Result<String, Error> {
     ));
   }
 
-  let created_full_chain = Stack::<X509>::new();
+  let created_ca_stack = Stack::<X509>::new();
 
-  if let Err(_) = created_full_chain {
+  if let Err(_) = created_ca_stack {
     return Err(Error::new(
       napi::Status::GenericFailure,
       "Failed to create full chain",
     ));
   }
 
-  let mut full_chain = created_full_chain.unwrap();
+  let mut ca_stack = created_ca_stack.unwrap();
 
-  for (i, pem_cert) in args.full_chain_pem.iter().enumerate() {
-    let certificate_parsed = X509::from_pem(pem_cert.as_bytes());
+  for (i, ca_pem) in args.ca_chain_pem.iter().enumerate() {
+    let ca_parsed = X509::from_pem(ca_pem.as_bytes());
 
-    if let Err(_) = certificate_parsed {
+    if let Err(_) = ca_parsed {
       return Err(Error::new(
         napi::Status::InvalidArg,
-        format!("Failed to parse full_chain_pem[{}]", i),
+        format!("Failed to parse caChainPem[{}]", i),
       ));
     }
 
-    let certificate_added = full_chain.push(certificate_parsed.unwrap());
+    let ca_added = ca_stack.push(ca_parsed.unwrap());
 
-    if let Err(_) = certificate_added {
+    if let Err(_) = ca_added {
       return Err(Error::new(
         napi::Status::GenericFailure,
-        format!("Failed to add full_chain_pem[{}] to full chain", i),
+        format!("Failed to add caChainPem[{}] to full chain", i),
       ));
     }
   }
@@ -69,7 +69,7 @@ pub fn create_pkcs12(args: CreatePkcs12Args) -> Result<String, Error> {
 
   pfx_builder.cert(&certificate_parsed.unwrap());
   pfx_builder.pkey(&private_key_parsed.unwrap());
-  pfx_builder.ca(full_chain);
+  pfx_builder.ca(ca_stack);
 
   let builded_pfx_result = pfx_builder.build2(&args.password);
 

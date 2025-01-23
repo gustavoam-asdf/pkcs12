@@ -7,6 +7,6 @@ export interface CreatePkcs12Args {
   password: string
   privateKeyPem: string
   certificatePem: string
-  fullChainPem: Array<string>
+  caChainPem: Array<string>
 }
 export declare function createPkcs12(args: CreatePkcs12Args): string
