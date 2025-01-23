@@ -13,9 +13,8 @@ test('build a pfx', async (t) => {
     createPkcs12({
       certificatePem,
       privateKeyPem,
-      password: "password",
+      password: "0123456789",
       fullChainPem: [
-        certificatePem,
         subCA,
         rootCA,
       ],
@@ -40,9 +39,8 @@ test('throw invalid arg exception', async (t) => {
     () => createPkcs12({
       certificatePem: randomString(100),
       privateKeyPem,
-      password: "password",
+      password: "0123456789",
       fullChainPem: [
-        certificatePem,
         subCA,
         rootCA,
       ],
@@ -58,9 +56,8 @@ test('throw invalid arg exception', async (t) => {
     () => createPkcs12({
       certificatePem,
       privateKeyPem: randomString(100),
-      password: "password",
+      password: "0123456789",
       fullChainPem: [
-        certificatePem,
         subCA,
         rootCA,
       ],
@@ -76,10 +73,9 @@ test('throw invalid arg exception', async (t) => {
     () => createPkcs12({
       certificatePem,
       privateKeyPem,
-      password: "password",
+      password: "0123456789",
       fullChainPem: [
         randomString(100),
-        subCA,
         rootCA,
       ],
     }),
