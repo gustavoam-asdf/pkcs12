@@ -76,8 +76,7 @@ pub fn create_pkcs12(args: CreatePkcs12Args) -> Result<String, Error> {
 
   let builded_pfx_result = pfx_builder.build2(&args.password);
 
-  if let Err(e) = builded_pfx_result {
-    println!("{:#?}", e);
+  if let Err(_) = builded_pfx_result {
     return Err(Error::new(
       napi::Status::GenericFailure,
       "Failed to build pfx",
