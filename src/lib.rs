@@ -1,7 +1,7 @@
 #![deny(clippy::all)]
 
 use napi::Error;
-use openssl::{base64, nid::Nid, pkcs12::Pkcs12, pkey::PKey, stack::Stack, x509::X509};
+use openssl::{base64, pkcs12::Pkcs12, pkey::PKey, stack::Stack, x509::X509};
 
 #[macro_use]
 extern crate napi_derive;
@@ -14,8 +14,13 @@ pub struct CreatePkcs12Args {
   pub ca_chain_pem: Vec<String>,
 }
 
+#[napi(object)]
+pub struct CreatedPkcs12 {
+  pub base64: String,
+}
+
 #[napi]
-pub fn create_pkcs12(args: CreatePkcs12Args) -> Result<String, Error> {
+pub fn create_pkcs12(args: CreatePkcs12Args) -> Result<CreatedPkcs12, Error> {
   let certificate_parsed = X509::from_pem(args.certificate_pem.as_bytes());
 
   if let Err(_) = certificate_parsed {
@@ -89,5 +94,5 @@ pub fn create_pkcs12(args: CreatePkcs12Args) -> Result<String, Error> {
 
   let pfx_base64 = base64::encode_block(&pfx_bytes);
 
-  Ok(pfx_base64)
+  Ok(CreatedPkcs12 { base64: pfx_base64 })
 }

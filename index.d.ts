@@ -9,4 +9,7 @@ export interface CreatePkcs12Args {
   certificatePem: string
   caChainPem: Array<string>
 }
-export declare function createPkcs12(args: CreatePkcs12Args): string
+export interface CreatedPkcs12 {
+  base64: string
+}
+export declare function createPkcs12(args: CreatePkcs12Args): CreatedPkcs12
