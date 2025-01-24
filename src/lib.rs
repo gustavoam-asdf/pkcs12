@@ -1,7 +1,7 @@
 #![deny(clippy::all)]
 
 use napi::Error;
-use openssl::{base64, pkcs12::Pkcs12, pkey::PKey, stack::Stack, x509::X509};
+use openssl::{base64, nid::Nid, pkcs12::Pkcs12, pkey::PKey, stack::Stack, x509::X509};
 
 #[macro_use]
 extern crate napi_derive;
@@ -67,13 +67,17 @@ pub fn create_pkcs12(args: CreatePkcs12Args) -> Result<String, Error> {
 
   let mut pfx_builder = Pkcs12::builder();
 
+  pfx_builder.key_algorithm(Nid::PBE_WITHSHA1AND3_KEY_TRIPLEDES_CBC);
+  pfx_builder.cert_algorithm(Nid::PBE_WITHSHA1AND3_KEY_TRIPLEDES_CBC);
+
   pfx_builder.cert(&certificate_parsed.unwrap());
   pfx_builder.pkey(&private_key_parsed.unwrap());
   pfx_builder.ca(ca_stack);
 
   let builded_pfx_result = pfx_builder.build2(&args.password);
 
-  if let Err(_) = builded_pfx_result {
+  if let Err(e) = builded_pfx_result {
+    println!("{:#?}", e);
     return Err(Error::new(
       napi::Status::GenericFailure,
       "Failed to build pfx",
