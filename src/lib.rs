@@ -67,8 +67,8 @@ pub fn create_pkcs12(args: CreatePkcs12Args) -> Result<String, Error> {
 
   let mut pfx_builder = Pkcs12::builder();
 
-  pfx_builder.key_algorithm(Nid::PBE_WITHSHA1AND3_KEY_TRIPLEDES_CBC);
-  pfx_builder.cert_algorithm(Nid::PBE_WITHSHA1AND3_KEY_TRIPLEDES_CBC);
+  // pfx_builder.key_algorithm(Nid::PBE_WITHSHA1AND3_KEY_TRIPLEDES_CBC);
+  // pfx_builder.cert_algorithm(Nid::PBE_WITHSHA1AND3_KEY_TRIPLEDES_CBC);
 
   pfx_builder.cert(&certificate_parsed.unwrap());
   pfx_builder.pkey(&private_key_parsed.unwrap());
