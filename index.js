@@ -310,6 +310,10 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { createPkcs12 } = nativeBinding
+const { EncryptAlgorithm, MacMessageDigest, OPENSSL_V1_ENCRYPT_CONFIG, OPENSSL_V3_ENCRYPT_CONFIG, createPkcs12 } = nativeBinding
 
+module.exports.EncryptAlgorithm = EncryptAlgorithm
+module.exports.MacMessageDigest = MacMessageDigest
+module.exports.OPENSSL_V1_ENCRYPT_CONFIG = OPENSSL_V1_ENCRYPT_CONFIG
+module.exports.OPENSSL_V3_ENCRYPT_CONFIG = OPENSSL_V3_ENCRYPT_CONFIG
 module.exports.createPkcs12 = createPkcs12

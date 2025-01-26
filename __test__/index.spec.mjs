@@ -1,16 +1,20 @@
-import { createPkcs12 } from '../index.js'
+import { OPENSSL_V1_ENCRYPT_CONFIG, OPENSSL_V3_ENCRYPT_CONFIG, createPkcs12 } from '../index.js'
+
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import test from 'ava'
 
-test('build a pfx', async (t) => {
+//TODO: Add tests for expected encrypt algorithms of created pfx reading it with openssl
+
+test('build a pfx using openssl v3 encrypt config', async (t) => {
   const rootCA = await fs.readFile(`./__test__/resources/root-ca.pem`, "utf8");
   const subCA = await fs.readFile(`./__test__/resources/sub-ca.pem`, "utf8");
   const certificatePem = await fs.readFile(`./__test__/resources/certificate.pem`, "utf8");
   const privateKeyPem = await fs.readFile(`./__test__/resources/private-key.pem`, "utf8");
 
-  t.notThrows(() => {
-    createPkcs12({
+  t.notThrows(async () => {
+    const pkcs = createPkcs12({
+      alias: "test",
       certificatePem,
       privateKeyPem,
       password: "0123456789",
@@ -18,7 +22,33 @@ test('build a pfx', async (t) => {
         subCA,
         rootCA,
       ],
+      encryptConfig: OPENSSL_V3_ENCRYPT_CONFIG
     })
+
+    await fs.writeFile(`./__test__/resources/keystore-openssl-v3.pfx`, pkcs.base64, "base64");
+  })
+})
+
+test('build a pfx using openssl v1 encrypt config', async (t) => {
+  const rootCA = await fs.readFile(`./__test__/resources/root-ca.pem`, "utf8");
+  const subCA = await fs.readFile(`./__test__/resources/sub-ca.pem`, "utf8");
+  const certificatePem = await fs.readFile(`./__test__/resources/certificate.pem`, "utf8");
+  const privateKeyPem = await fs.readFile(`./__test__/resources/private-key.pem`, "utf8");
+
+  t.notThrows(async () => {
+    const pkcs = createPkcs12({
+      alias: "test",
+      certificatePem,
+      privateKeyPem,
+      password: "0123456789",
+      caChainPem: [
+        subCA,
+        rootCA,
+      ],
+      encryptConfig: OPENSSL_V1_ENCRYPT_CONFIG
+    })
+
+    await fs.writeFile(`./__test__/resources/keystore-openssl-v1.pfx`, pkcs.base64, "base64");
   })
 })
 
