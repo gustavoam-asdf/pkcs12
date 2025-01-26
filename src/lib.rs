@@ -8,6 +8,7 @@ extern crate napi_derive;
 
 #[napi(object)]
 pub struct CreatePkcs12Args {
+  pub alias: Option<String>,
   pub password: String,
   pub private_key_pem: String,
   pub certificate_pem: String,
@@ -74,6 +75,10 @@ pub fn create_pkcs12(args: CreatePkcs12Args) -> Result<CreatedPkcs12, Error> {
 
   // pfx_builder.key_algorithm(Nid::PBE_WITHSHA1AND3_KEY_TRIPLEDES_CBC);
   // pfx_builder.cert_algorithm(Nid::PBE_WITHSHA1AND3_KEY_TRIPLEDES_CBC);
+
+  if let Some(alias) = args.alias {
+    pfx_builder.name(&alias);
+  }
 
   pfx_builder.cert(&certificate_parsed.unwrap());
   pfx_builder.pkey(&private_key_parsed.unwrap());
