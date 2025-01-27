@@ -41,5 +41,13 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/gustavoam-asdf/pkcs12.git"
-  }
+  },
+  "keywords": [
+    "pkcs12",
+    "openssl",
+    "crypto",
+    "certificate",
+    "pfx",
+    "p12"
+  ]
 }
