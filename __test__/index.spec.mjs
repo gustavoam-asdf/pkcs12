@@ -125,10 +125,14 @@ test('throw invalid arg exception on create pkcs12', async (t) => {
 })
 
 test('extract all components from pfx created with openssl v1 encrypt config', async (t) => {
-  const certificatePem = await fs.readFile(`${resourcesDir}/certificate.pem`, "utf8");
-  const privateKeyPem = await fs.readFile(`${resourcesDir}/private-key.pem`, "utf8");
-  const rootCA = await fs.readFile(`${resourcesDir}/root-ca.pem`, "utf8");
-  const subCA = await fs.readFile(`${resourcesDir}/sub-ca.pem`, "utf8");
+  const certificatePem = await fs.readFile(`${resourcesDir}/certificate.pem`, "utf8")
+    .then(data => data.replace(/\r\n/g, '\n'));
+  const privateKeyPem = await fs.readFile(`${resourcesDir}/private-key.pem`, "utf8")
+    .then(data => data.replace(/\r\n/g, '\n'));
+  const rootCA = await fs.readFile(`${resourcesDir}/root-ca.pem`, "utf8")
+    .then(data => data.replace(/\r\n/g, '\n'));
+  const subCA = await fs.readFile(`${resourcesDir}/sub-ca.pem`, "utf8")
+    .then(data => data.replace(/\r\n/g, '\n'));
 
   const pfx = await fs.readFile(`${resourcesDir}/keystore-openssl-v1.pfx`, "base64");
 
@@ -163,10 +167,14 @@ test('extract all components from pfx created with openssl v1 encrypt config', a
 })
 
 test('extract all components from pfx created with openssl v3 encrypt config', async (t) => {
-  const certificatePem = await fs.readFile(`${resourcesDir}/certificate.pem`, "utf8");
-  const privateKeyPem = await fs.readFile(`${resourcesDir}/private-key.pem`, "utf8");
-  const rootCA = await fs.readFile(`${resourcesDir}/root-ca.pem`, "utf8");
-  const subCA = await fs.readFile(`${resourcesDir}/sub-ca.pem`, "utf8");
+  const certificatePem = await fs.readFile(`${resourcesDir}/certificate.pem`, "utf8")
+    .then(data => data.replace(/\r\n/g, '\n'));
+  const privateKeyPem = await fs.readFile(`${resourcesDir}/private-key.pem`, "utf8")
+    .then(data => data.replace(/\r\n/g, '\n'));
+  const rootCA = await fs.readFile(`${resourcesDir}/root-ca.pem`, "utf8")
+    .then(data => data.replace(/\r\n/g, '\n'));
+  const subCA = await fs.readFile(`${resourcesDir}/sub-ca.pem`, "utf8")
+    .then(data => data.replace(/\r\n/g, '\n'));
 
   const pfx = await fs.readFile(`${resourcesDir}/keystore-openssl-v3.pfx`, "base64");
 
