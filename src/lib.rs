@@ -195,3 +195,149 @@ pub fn create_pkcs12(args: CreatePkcs12Args) -> Result<CreatedPkcs12, Error> {
 
   Ok(CreatedPkcs12 { base64: pfx_base64 })
 }
+
+#[napi(string_enum)]
+pub enum Pkcs12Object {
+  Certificate,
+  PrivateKey,
+  CAChain,
+}
+
+#[napi(object)]
+pub struct ExtractPkcs12Args {
+  pub base64: String,
+  pub password: String,
+  pub object: Pkcs12Object,
+}
+
+#[napi(object)]
+pub struct ExtractedPkcs12 {
+  pub object: Pkcs12Object,
+  pub pem: String,
+}
+
+#[napi]
+pub fn extract_pkcs12(args: ExtractPkcs12Args) -> Result<ExtractedPkcs12, Error> {
+  openssl::init();
+  let loaded_provider_result = Provider::try_load(None, "legacy", true);
+
+  if let Err(e) = loaded_provider_result {
+    return Err(Error::new(
+      napi::Status::GenericFailure,
+      format!(
+        "Failed to activate legacy openssl v1 mode with error: {:#?}",
+        e
+      ),
+    ));
+  }
+
+  let pkcs12_bytes_result = base64::decode_block(&args.base64);
+
+  if let Err(_) = pkcs12_bytes_result {
+    return Err(Error::new(
+      napi::Status::InvalidArg,
+      "Failed to decode base64",
+    ));
+  }
+
+  let pkcs12_bytes = pkcs12_bytes_result.unwrap();
+
+  let pkcs12_parsed = Pkcs12::from_der(&pkcs12_bytes.as_slice());
+
+  if let Err(_) = pkcs12_parsed {
+    return Err(Error::new(
+      napi::Status::InvalidArg,
+      "Failed to parse pkcs12",
+    ));
+  }
+
+  let pkcs12 = pkcs12_parsed.unwrap();
+
+  let opened_pkcs12_result = pkcs12.parse2(&args.password);
+
+  if let Err(_) = opened_pkcs12_result {
+    return Err(Error::new(
+      napi::Status::InvalidArg,
+      "Failed to open pkcs12 with provided password",
+    ));
+  }
+
+  let opened_pkcs12 = opened_pkcs12_result.unwrap();
+
+  return match args.object {
+    Pkcs12Object::Certificate => {
+      if let None = opened_pkcs12.cert {
+        return Err(Error::new(
+          napi::Status::InvalidArg,
+          "PKCS #12 does not contain a certificate",
+        ));
+      }
+
+      let cert = opened_pkcs12.cert.unwrap();
+      let pem_cert_res = cert.to_pem();
+      if let Err(_) = pem_cert_res {
+        return Err(Error::new(
+          napi::Status::GenericFailure,
+          "Failed to convert certificate to PEM",
+        ));
+      }
+      let pem_cert = pem_cert_res.unwrap();
+
+      Ok(ExtractedPkcs12 {
+        object: Pkcs12Object::Certificate,
+        pem: String::from_utf8(pem_cert).expect("Failed to convert certificate PEM to string"),
+      })
+    }
+    Pkcs12Object::PrivateKey => {
+      if let None = opened_pkcs12.pkey {
+        return Err(Error::new(
+          napi::Status::InvalidArg,
+          "PKCS #12 does not contain a private key",
+        ));
+      }
+
+      let pkey = opened_pkcs12.pkey.unwrap();
+      let pem_pkey_res = pkey.private_key_to_pem_pkcs8();
+      if let Err(_) = pem_pkey_res {
+        return Err(Error::new(
+          napi::Status::GenericFailure,
+          "Failed to convert private key to PEM",
+        ));
+      }
+      let pem_pkey = pem_pkey_res.unwrap();
+      Ok(ExtractedPkcs12 {
+        object: Pkcs12Object::PrivateKey,
+        pem: String::from_utf8(pem_pkey).expect("Failed to convert private key PEM to string"),
+      })
+    }
+    Pkcs12Object::CAChain => {
+      if let None = opened_pkcs12.ca {
+        return Err(Error::new(
+          napi::Status::InvalidArg,
+          "PKCS #12 does not contain a CA chain",
+        ));
+      }
+
+      let ca_chain = opened_pkcs12.ca.unwrap();
+      let mut pem_ca_chain = String::new();
+
+      for (i, ca) in ca_chain.iter().enumerate() {
+        let pem_ca_res = ca.to_pem();
+        if let Err(_) = pem_ca_res {
+          return Err(Error::new(
+            napi::Status::GenericFailure,
+            format!("Failed to convert CA certificate {} to PEM", i),
+          ));
+        }
+        let pem_ca = pem_ca_res.unwrap();
+        pem_ca_chain
+          .push_str(&String::from_utf8(pem_ca).expect("Failed to convert CA PEM to string"));
+      }
+
+      Ok(ExtractedPkcs12 {
+        object: Pkcs12Object::CAChain,
+        pem: pem_ca_chain,
+      })
+    }
+  };
+}

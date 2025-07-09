@@ -4,12 +4,10 @@ OpenSSL wrapper to handle PKCS #12 files.
 
 ## Roadmap
 
-- [✓] Create a PKCS #12 file from a private key and a certificate.
-- [✓] Create a PKCS #12 file from a private key and a certificate and a CA certificate.
-- [✓] Support standard encryption algorithms of OpenSSL v1 and v3.
-- [✗] Parse a PKCS #12 file and extract the private key and the certificate.
-- [✗] Parse a PKCS #12 file and extract the private key, the certificate and the CA certificate.
-- [✗] Parse and read a PKCS #12 information.
+- [✓] **PKCS #12 Creation**: Generate PKCS #12 files from private keys and certificates with certificate authority chains
+- [✓] **Encryption Support**: Full compatibility with standard OpenSSL v1 and v3 encryption algorithms
+- [✓] **PKCS #12 Parsing**: Extract and decode private keys, certificates, and CA chains from existing PKCS #12 files
+- [✗] **Information Reading**: Parse and display detailed PKCS #12 metadata and structure information
 
 <!-- TODO: Verify that it is needed on production -->
 ## Install OpenSSL3 dependency

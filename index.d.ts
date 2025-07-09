@@ -35,3 +35,18 @@ export interface CreatedPkcs12 {
   base64: string
 }
 export declare function createPkcs12(args: CreatePkcs12Args): CreatedPkcs12
+export const enum Pkcs12Object {
+  Certificate = 'Certificate',
+  PrivateKey = 'PrivateKey',
+  CAChain = 'CAChain'
+}
+export interface ExtractPkcs12Args {
+  base64: string
+  password: string
+  object: Pkcs12Object
+}
+export interface ExtractedPkcs12 {
+  object: Pkcs12Object
+  pem: string
+}
+export declare function extractPkcs12(args: ExtractPkcs12Args): ExtractedPkcs12
