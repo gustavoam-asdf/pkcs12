@@ -45,6 +45,8 @@ apk add pkgconf openssl-dev
 
 ## Quick usage
 
+### Creating a PKCS #12 file
+
 ```javascript
 import { createPkcs12 } from "@gaam/pkcs12";
 
@@ -58,4 +60,31 @@ const pkcs = createPkcs12({
 		rootCA,
 	],
 })
+```
+
+### Extracting objects from a PKCS #12 file
+
+```javascript
+import { extractPkcs12, Pkcs12Object } from "@gaam/pkcs12";
+
+// Extract certificate
+const certificate = extractPkcs12({
+	base64: pkcs12Base64,
+	password: "0123456789",
+	object: Pkcs12Object.Certificate
+});
+
+// Extract private key
+const privateKey = extractPkcs12({
+	base64: pkcs12Base64,
+	password: "0123456789",
+	object: Pkcs12Object.PrivateKey
+});
+
+// Extract CA chain
+const caChain = extractPkcs12({
+	base64: pkcs12Base64,
+	password: "0123456789",
+	object: Pkcs12Object.CAChain
+});
 ```
